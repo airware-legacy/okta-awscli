@@ -1,7 +1,7 @@
 """ Wrapper script for awscli which handles Okta auth """
 # pylint: disable=C0325
 from subprocess import call
-from version import __version__
+from oktaawscli.version import __version__
 import logging
 from oktaawscli.okta_auth import OktaAuth
 from oktaawscli.aws_auth import AwsAuth
