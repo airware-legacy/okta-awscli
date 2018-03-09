@@ -2,19 +2,17 @@
 
 Authenticates a user against Okta and then uses the resulting SAML assertion to retrieve temporary STS credentials from AWS.
 
-This project is largely inspired by https://github.com/nimbusscale/okta_aws_login, but instead uses a purely API-driven approach, instead of parsing HTML during the authentication phase.
-
-Parsing the HTML is still required to get the SAML assertion, after authentication is complete. However, since we only need to look for the SAML assertion in a single, predictable tag, `<input name="SAMLResponse"...`, the results are a lot more stable across any changes that Okta may make to their interface.
-
 
 ## Installation
 
-- `pip install okta-awscli`
+- `virtualenv oktaawscli`
+- `source ./oktaawscli/bin/activate`
+- `pip install git+ssh://git@github.com/airware/okta-awscli.git`
 - Configure okta-awscli via the `~/.okta-aws` file with the following parameters:
 
 ```
 [default]
-base-url = <your_okta_org>.okta.com
+base-url = airware.okta.com
 
 ## The remaining parameters are optional.
 ## You will be prompted for them, if they're not included here.
@@ -22,19 +20,6 @@ username = <your_okta_username>
 password = <your_okta_password> # Only save your password if you know what you are doing!
 factor = <your_preferred_mfa_factor> # Current choices are: GOOGLE or OKTA
 ```
-
-## Supported Features
-
-- Tenant wide MFA support
-- Okta Verify [Play Store](https://play.google.com/store/apps/details?id=com.okta.android.auth) | [App Store](https://itunes.apple.com/us/app/okta-verify/id490179405)
-- Okta Verify Push Support
-- Google Authenticator [Play Store](https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2) | [App Store](https://itunes.apple.com/us/app/google-authenticator/id388497605) 
-
-
-## Unsupported Features
-
-- Per application MFA support
-
 
 ## Usage
 

@@ -189,13 +189,16 @@ class OktaAuth(object):
             sys.exit(1)
 
         aws_apps = sorted(aws_apps, key=lambda app: app['sortOrder'])
-        print("Available apps:")
-        for index, app in enumerate(aws_apps):
-            app_name = app['label']
-            print("%d: %s" % (index + 1, app_name))
+        if len(aws_apps) > 1:
+            print("Available apps:")
+            for index, app in enumerate(aws_apps):
+                app_name = app['label']
+                print("%d: %s" % (index + 1, app_name))
 
-        app_choice = input('Please select AWS app: ') - 1
-        return aws_apps[app_choice]['label'], aws_apps[app_choice]['linkUrl']
+            app_choice = input('Please select AWS app: ') - 1
+            return aws_apps[app_choice]['label'], aws_apps[app_choice]['linkUrl']
+        else:
+            return aws_apps[0]['label'], aws_apps[0]['linkUrl']
 
     def get_saml_assertion(self, html):
         """ Returns the SAML assertion from HTML """

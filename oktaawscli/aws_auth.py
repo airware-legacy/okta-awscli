@@ -8,6 +8,7 @@ from configparser import RawConfigParser
 import boto3
 from botocore.exceptions import ClientError
 
+from oktaawscli.airware_aws_accts import aws_acct_ids
 
 class AwsAuth(object):
     """ Methods to support AWS authentication using STS """
@@ -45,6 +46,7 @@ class AwsAuth(object):
 
         for index, role in enumerate(roles):
             role_name = role.role_arn.split('/')[1]
+            account_id = role.role_arn.split(':')[4]
 
             # Return the role as soon as it matches the saved role
             # Proceed to user choice if it's not found.
@@ -52,7 +54,10 @@ class AwsAuth(object):
                 if role_name == self.role:
                     self.logger.info("Using predefined role: %s" % self.role)
                     return roles[index]
-            role_list.append("%d: %s" % (index + 1, role_name))
+            try:
+                role_list.append("%d: %s %s" % (index + 1, role_name, aws_acct_ids[account_id]))
+            except KeyError:
+                role_list.append("%d: %s %s" % (index + 1, role_name, account_id))
 
         if self.role:
             self.logger.info("Predefined role, %s, not found in the list of roles assigned to you."
