@@ -143,7 +143,7 @@ class OktaAuth(object):
             if resp_json['status'] == "SUCCESS":
                 return resp_json['sessionToken']
             elif resp_json['status'] == "MFA_CHALLENGE":
-                print "Waiting for push verification..."
+                print( "Waiting for push verification...")
                 while True:
                     resp = requests.post(
                         resp_json['_links']['next']['href'], json=req_data)
@@ -151,10 +151,10 @@ class OktaAuth(object):
                     if resp_json['status'] == 'SUCCESS':
                         return resp_json['sessionToken']
                     elif resp_json['factorResult'] == 'TIMEOUT':
-                        print "Verification timed out"
+                        print("Verification timed out")
                         exit(1)
                     elif resp_json['factorResult'] == 'REJECTED':
-                        print "Verification was rejected"
+                        print("Verification was rejected")
                         exit(1)
                     else:
                         time.sleep(0.5)
