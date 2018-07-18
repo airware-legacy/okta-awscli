@@ -7,7 +7,7 @@ Authenticates a user against Okta and then uses the resulting SAML assertion to 
 
 - `virtualenv oktaawscli`
 - `source ./oktaawscli/bin/activate`
-- `pip install git+ssh://git@github.com/airware/okta-awscli.git`
+- `pip install git+ssh://git@github.com/airware/okta-awscli.git@develop`
 - Configure okta-awscli via the `~/.okta-aws` file with the following parameters:
 
 ```
