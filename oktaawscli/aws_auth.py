@@ -8,7 +8,7 @@ from configparser import RawConfigParser
 import boto3
 from botocore.exceptions import ClientError
 
-from oktaawscli.airware_aws_accts import aws_acct_ids
+from oktaawscli.aws_accts_conf import aws_acct_ids
 
 class AwsAuth(object):
     """ Methods to support AWS authentication using STS """
@@ -35,37 +35,45 @@ class AwsAuth(object):
         aws_attribute_role = 'https://aws.amazon.com/SAML/Attributes/Role'
         attribute_value_urn = '{urn:oasis:names:tc:SAML:2.0:assertion}AttributeValue'
         roles = []
-        role_tuple = namedtuple("RoleTuple", ["principal_arn", "role_arn"])
+        role_tuple = namedtuple("RoleTuple", ["principal_arn", "role_arn", "role_name", "account_id", "account_name"])
         root = ET.fromstring(base64.b64decode(assertion))
         for saml2attribute in root.iter('{urn:oasis:names:tc:SAML:2.0:assertion}Attribute'):
             if saml2attribute.get('Name') == aws_attribute_role:
                 for saml2attributevalue in saml2attribute.iter(attribute_value_urn):
-                    roles.append(role_tuple(*saml2attributevalue.text.split(',')))
+                    principal_arn, role_arn = saml2attributevalue.text.split(',')
+                    role_name = role_arn.split('/')[1]
+                    account_id = role_arn.split(':')[4]
+                    try:
+                        account_name =  aws_acct_ids[account_id]
+                    except KeyError:
+                        account_name =  account_id
+                    roles.append(role_tuple(principal_arn, role_arn, role_name, account_id, account_name))
 
-        role_list = []
+        roles.sort(key=lambda e:e.account_name+e.role_name)
+
+        selection_list = []
+
+        col1 = len(str(len(roles) + 1)) + 2 # 1 to get index, 1 for the ':', 1 for the space
+        col2 = max(len(e.account_name) for e in roles) + 1
+        format_string = "{:<" + str(col1) +"}{:<" + str(col2) +"}{}"
 
         for index, role in enumerate(roles):
-            role_name = role.role_arn.split('/')[1]
-            account_id = role.role_arn.split(':')[4]
-
             # Return the role as soon as it matches the saved role
             # Proceed to user choice if it's not found.
             if self.role:
-                if role_name == self.role:
+                if role.role_name == self.role:
                     self.logger.info("Using predefined role: %s" % self.role)
                     return roles[index]
-            try:
-                role_list.append("%d: %s %s" % (index + 1, role_name, aws_acct_ids[account_id]))
-            except KeyError:
-                role_list.append("%d: %s %s" % (index + 1, role_name, account_id))
+
+            selection_list.append(format_string.format(str(index + 1) + ":", role.account_name, role.role_name))
 
         if self.role:
             self.logger.info("Predefined role, %s, not found in the list of roles assigned to you."
                              % self.role)
             self.logger.info("Please choose a role.")
 
-        for index, role_name in enumerate(role_list):
-            print(role_name)
+        for index, selection in enumerate(selection_list):
+            print(selection)
 
         role_choice = int(input('Please select the AWS role: ')) - 1
         return roles[role_choice]
